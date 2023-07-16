@@ -1,13 +1,19 @@
 (ns redis.core 
+  (:require [clojure.java.io :as io])
+  (:import [java.net ServerSocket])
   (:gen-class))
-
-(require '[clojure.java.io :as io])
-(import '[java.net ServerSocket])
 
 (defn receive-message
   "Read a line of textual data from the given socket"
   [socket]
-  (.readLine (io/reader socket)))
+  (let [reader (io/reader socket)
+        first-line (.readLine reader)]
+    (when first-line
+      (loop [line first-line
+             res []]
+        (if (.ready reader)
+          (recur (.readLine reader) (conj res line))
+          (conj res line))))))
 
 (defn send-message
   "Send the given string message out over the given socket"
@@ -32,7 +38,11 @@
 
 (defn handler
   [msg-in]
-  "+PONG\r\n")
+  (println "msg-in: " msg-in)
+  (case (get msg-in 2)
+    "ping" "+PONG\r\n"
+    "echo" (format "+%s\r\n" (get msg-in 4))
+    :else "+ERROR\r\n"))
 
 (defn -main
   "I don't do a whole lot ... yet."
