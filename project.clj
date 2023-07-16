@@ -3,7 +3,8 @@
   :url "http://github.com/codecrafters-io/redis-starter-clojure"
   :license {:name "MIT"
             :url "https://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.10.3"]]
+  :dependencies [[org.clojure/clojure "1.10.3"]
+                 [org.clojure/core.async "1.6.673"]]
   :main ^:skip-aot redis.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

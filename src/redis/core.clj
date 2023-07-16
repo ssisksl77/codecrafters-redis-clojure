@@ -1,4 +1,4 @@
-(ns redis.core
+(ns redis.core 
   (:gen-class))
 
 (require '[clojure.java.io :as io])
@@ -17,25 +17,21 @@
     (.flush writer)))
 
 (defn handle-client [socket handler]
-  (while true
-    (let [msg-in (receive-message socket)
-          msg-out (handler msg-in)]
-      (send-message socket msg-out))))
+  (with-open [sock socket]
+    (while true
+      (let [msg-in (receive-message socket)
+            msg-out (handler msg-in)]
+        (send-message sock msg-out)))))
 
 (defn serve [port handler]
   (with-open [server-sock (ServerSocket. port)]
     (. server-sock (setReuseAddress true))
     (while true
       (let [sock (.accept server-sock)]
-        (future (handle-client sock handler)))
-      #_(let [sock (.accept server-sock)
-              msg-in (receive-message sock)
-              msg-out (handler msg-in)]
-
-          (send-message sock msg-out)))))
+        (future (handle-client sock handler))))))
 
 (defn handler
-  [& args]
+  [msg-in]
   "+PONG\r\n")
 
 (defn -main
