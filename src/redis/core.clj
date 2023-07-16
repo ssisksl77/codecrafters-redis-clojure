@@ -36,12 +36,21 @@
       (let [sock (.accept server-sock)]
         (future (handle-client sock handler))))))
 
+(def storage (atom {}))
+
 (defn handler
   [msg-in]
   (println "msg-in: " msg-in)
   (case (get msg-in 2)
     "ping" "+PONG\r\n"
     "echo" (format "+%s\r\n" (get msg-in 4))
+    "set"  (do 
+             (let [k (get msg-in 4)
+                   v (get msg-in 6)]
+               (println "adding [k,v]" [k v])
+               (swap! storage assoc k v))
+             "+OK\r\n")
+    "get"  (format "+%s\r\n" (@storage (get msg-in 4)))
     :else "+ERROR\r\n"))
 
 (defn -main
