@@ -1,4 +1,4 @@
-![progress-banner](https://codecrafters.io/landing/images/default_progress_banners/redis.png)
+[![progress-banner](https://backend.codecrafters.io/progress/redis/b6d9f39e-4293-4e4c-941c-ac0316121358)](https://app.codecrafters.io/users/ssisksl77?r=2qF)
 
 This is a starting point for Clojure solutions to the
 ["Build Your Own Redis" Challenge](https://codecrafters.io/challenges/redis).
