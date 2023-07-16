@@ -1,6 +1,7 @@
 (ns redis.core 
   (:require [clojure.java.io :as io])
-  (:import [java.net ServerSocket])
+  (:import [java.net ServerSocket]
+           [java.time Instant Duration])
   (:gen-class))
 
 (defn receive-message
@@ -40,17 +41,25 @@
 
 (defn handler
   [msg-in]
-  (println "msg-in: " msg-in)
+  #_(println "msg-in: " msg-in)
   (case (get msg-in 2)
     "ping" "+PONG\r\n"
     "echo" (format "+%s\r\n" (get msg-in 4))
     "set"  (do 
              (let [k (get msg-in 4)
-                   v (get msg-in 6)]
-               (println "adding [k,v]" [k v])
-               (swap! storage assoc k v))
+                   v (get msg-in 6)
+                   exp (get msg-in 10)]
+               (println "adding [k,v,exp]" [k v exp])
+               (if exp 
+                 (swap! storage assoc k {:v v :exp (.plus (Instant/now)
+                                                          (Duration/ofMillis (Integer/parseInt exp)))})
+                 (swap! storage assoc k {:v v})))
              "+OK\r\n")
-    "get"  (format "+%s\r\n" (@storage (get msg-in 4)))
+    "get" (let [{:keys [exp v] :as data} (@storage (get msg-in 4))
+                _ (println data)]
+            (if (and v (or (nil? exp) (.isBefore (Instant/now) exp))) 
+              (format "+%s\r\n" v)
+              "$-1\r\n"))
     :else "+ERROR\r\n"))
 
 (defn -main
